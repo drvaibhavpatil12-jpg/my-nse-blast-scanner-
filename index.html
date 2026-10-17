@@ -1,87 +1,193 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My NSE Blast Scanner</title>
-<style>
-*{box-sizing:border-box}
-body{margin:0;background:#0b1020;color:#edf2ff;font-family:Arial,sans-serif}
-header{padding:18px;background:#141c30;border-bottom:1px solid #29344c}
-h1{font-size:22px;margin:0 0 8px}
-small{color:#aab7d0}
-main{padding:14px;max-width:1000px;margin:auto}
-.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.card{background:#151f33;border:1px solid #2a3852;border-radius:12px;padding:12px}
-.num{font-size:23px;font-weight:bold;margin-top:8px}
-nav{display:flex;gap:8px;overflow:auto;margin:16px 0}
-button{background:#202d45;color:white;border:1px solid #35445f;border-radius:9px;padding:11px;cursor:pointer;white-space:nowrap}
-button.active{background:#2864dc}
-.stock{background:#151f33;border:1px solid #2a3852;border-radius:12px;padding:14px;margin:10px 0}
-.stocktop{display:flex;justify-content:space-between;gap:8px}
-.green{color:#48e0a0}.red{color:#ff737d}.yellow{color:#ffd166}
-.tag{font-size:12px;background:#263650;padding:5px 8px;border-radius:6px}
-.detail{color:#aab7d0;font-size:13px;line-height:1.8;margin-top:8px}
-.note{font-size:12px;color:#ffd166;line-height:1.6}
-h2{font-size:18px}
-@media(max-width:420px){.cards{grid-template-columns:repeat(2,1fr)}h1{font-size:19px}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NSE Intraday Blast Scanner</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-color: #f8fafc;
+            --accent-green: #22c55e;
+            --accent-red: #ef4444;
+            --accent-yellow: #eab308;
+            --border-color: #334155;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 12px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 12px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        h1 {
+            font-size: 20px;
+            margin: 0 0 6px 0;
+            color: #38bdf8;
+        }
+
+        .demo-badge {
+            background-color: var(--accent-yellow);
+            color: #000;
+            font-weight: bold;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 20px;
+            display: inline-block;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .scanner-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge-green { color: var(--accent-green); background: rgba(34, 197, 94, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+        .badge-red { color: var(--accent-red); background: rgba(239, 68, 68, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 8px 4px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th { color: #94a3b8; font-weight: normal; }
+        .price-up { color: var(--accent-green); font-weight: bold; }
+        .price-down { color: var(--accent-red); font-weight: bold; }
+    </style>
 </head>
 <body>
-<header>
-<h1>⚡ My NSE Blast Scanner</h1>
-<div id="clock"></div>
-<small>NSE India · Intraday · Demo mode only</small>
-</header>
-<main>
-<div class="cards">
-<div class="card">Bullish <div class="num green" id="bull">2</div></div>
-<div class="card">Bearish <div class="num red" id="bear">2</div></div>
-<div class="card">Blast 💥 <div class="num yellow" id="blast">2</div></div>
-</div>
-<nav id="tabs">
-<button class="active" data-tab="Overview">Overview</button>
-<button data-tab="Scanners">Scanners</button>
-<button data-tab="Sectors">Sectors</button>
-<button data-tab="Watchlist">Watchlist</button>
-<button data-tab="API Settings">API Settings</button>
-</nav>
-<div id="content"></div>
-<p class="note">⚠ Demo data only. Not live market data or trading advice. No trades are placed. Connect a secure backend and verified Kotak Neo API before using live signals.</p>
-</main>
-<script>
-const stocks=[
- {s:"RELIANCE",sector:"Oil & Gas",side:"BULLISH",pdh:true,price:"Demo"},
- {s:"HDFCBANK",sector:"Private Banks",side:"BULLISH",pdh:false,price:"Demo"},
- {s:"SBIN",sector:"PSU Banks",side:"BEARISH",pdl:true,price:"Demo"},
- {s:"INFY",sector:"Software & Services",side:"BEARISH",pdl:false,price:"Demo"},
- {s:"TATASTEEL",sector:"Metals & Mining",side:"BULLISH",pdh:true,price:"Demo"}
-];
-const scanners=["Bullish Blast","Bearish Blast","PDH Breakout","PDL Breakdown","Scalping","Intraday Trend","Volume Blast","Reversal","Opening Range Breakout (ORB)","Fake Breakout / Retest"];
-function updateClock(){
- document.getElementById("clock").textContent=
- new Date().toLocaleString("en-IN",{timeZone:"Asia/Kolkata",dateStyle:"medium",timeStyle:"medium"})+" IST";
-}
-setInterval(updateClock,1000);updateClock();
-function stockCard(x){
- let blast=(x.side==="BULLISH"&&x.pdh)||(x.side==="BEARISH"&&x.pdl);
- let cls=x.side==="BULLISH"?"green":"red";
- let label=x.side+(blast?" BLAST 💥":"");
- return `<div class="stock"><div class="stocktop"><strong>${x.s}</strong><span class="${cls}">${label}</span></div>
- <div class="detail">Sector: ${x.sector}<br>Price: DEMO — no live quote<br>Signal: illustrative only<br>PDH/PDL breakout: ${blast?"Demo condition true":"Not confirmed"}</div></div>`;
-}
-function show(tab){
- document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));
- let c=document.getElementById("content");
- if(tab==="Overview") c="<h2>Market Overview</h2><p class='note'>Market sentiment is not calculated from live data.</p>"+stocks.map(stockCard).join("");
- else if(tab==="Scanners") c="<h2>10 Scanner Categories</h2>"+scanners.map(x=>`<div class="stock">${x}<div class="detail">Awaiting real market data and scanner logic.</div></div>`).join("");
- else if(tab==="Sectors") c="<h2>Sectors</h2>"+[...new Set(stocks.map(x=>x.sector))].map(x=>`<div class="stock">${x}</div>`).join("");
- else if(tab==="Watchlist") c="<h2>Watchlist</h2>"+stocks.map(stockCard).join("");
- else c="<h2>Kotak Neo API</h2><div class='stock'>Connection: <span class='yellow'>Not connected</span><p class='detail'>API credentials must be handled by a secure backend. Do not paste secrets into this page or GitHub.</p>Next: configure a backend and verify official Kotak Neo API documentation.</div>";
- document.getElementById("content").innerHTML=c;
-}
-document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>show(b.dataset.tab)));
-show("Overview");
-</script>
+
+    <div class="header">
+        <h1>🚀 NSE Intraday Blast Scanner</h1>
+        <span class="demo-badge">⚠️ DEMO DATA - TEST MODE ONLY</span>
+    </div>
+
+    <div class="scanner-grid">
+        <!-- 1. Bullish Blast (PDH Breakout) -->
+        <div class="card">
+            <div class="card-title">
+                <span>🔥 1. Bullish Blast (PDH Breakout)</span>
+                <span class="badge-green">BULLISH</span>
+            </div>
+            <table>
+                <tr><th>Symbol</th><th>LTP (Demo)</th><th>PDH</th><th>Change</th></tr>
+                <tr><td><b>RELIANCE</b></td><td class="price-up">2755.00</td><td>2740.00</td><td class="price-up">+1.8%</td></tr>
+                <tr><td><b>TATASTEEL</b></td><td class="price-up">158.40</td><td>156.00</td><td class="price-up">+2.1%</td></tr>
+            </table>
+        </div>
+
+        <!-- 2. Bearish Blast (PDL Breakdown) -->
+        <div class="card">
+            <div class="card-title">
+                <span>🩸 2. Bearish Blast (PDL Breakdown)</span>
+                <span class="badge-red">BEARISH</span>
+            </div>
+            <table>
+                <tr><th>Symbol</th><th>LTP (Demo)</th><th>PDL</th><th>Change</th></tr>
+                <tr><td><b>INFY</b></td><td class="price-down">1420.00</td><td>1435.00</td><td class="price-down">-1.5%</td></tr>
+                <tr><td><b>HDFCBANK</b></td><td class="price-down">1510.00</td><td>1525.00</td><td class="price-down">-1.9%</td></tr>
+            </table>
+        </div>
+
+        <!-- 3. 15-Min ORB High Breakout -->
+        <div class="card">
+            <div class="card-title">
+                <span>⚡ 3. 15-Min ORB High Breakout</span>
+                <span class="badge-green">MOMENTUM</span>
+            </div>
+            <table>
+                <tr><th>Symbol</th><th>LTP (Demo)</th><th>ORB High</th><th>Status</th></tr>
+                <tr><td><b>ICICIBANK</b></td><td class="price-up">1105.00</td><td>1098.00</td><td class="price-up">Breaked ⬆️</td></tr>
+            </table>
+        </div>
+
+        <!-- 4. 15-Min ORB Low Breakdown -->
+        <div class="card">
+            <div class="card-title">
+                <span>⚡ 4. 15-Min ORB Low Breakdown</span>
+                <span class="badge-red">MOMENTUM</span>
+            </div>
+            <table>
+                <tr><th>Symbol</th><th>LTP (Demo)</th><th>ORB Low</th><th>Status</th></tr>
+                <tr><td><b>AXISBANK</b></td><td class="price-down">1040.00</td><td>1048.00</td><td class="price-down">Breaked ⬇️</td></tr>
+            </table>
+        </div>
+
+        <!-- 5. Volume Shockers -->
+        <div class="card">
+            <div class="card-title">
+                <span>📊 5. Volume Shockers (High Vol)</span>
+                <span class="badge-green">VOLUME</span>
+            </div>
+            <table>
+                <tr><th>Symbol</th><th>LTP (Demo)</th><th>Vol Spike</th></tr>
+                <tr><td><b>SBIN</b></td><td class="price-up">830.00</td><td><span class="price-up">3.5x Avg</span></td></tr>
+            </table>
+        </div>
+
+        <!-- 6 to 10: Extra Scanner Placeholders -->
+        <div class="card">
+            <div class="card-title"><span>🎯 6. VWAP Bullish Crossover</span><span class="badge-green">BULLISH</span></div>
+            <table><tr><td><b>BHARTIARTL</b></td><td class="price-up">1210.00</td><td>Crossed Above VWAP</td></tr></table>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><span>📉 7. VWAP Bearish Crossover</span><span class="badge-red">BEARISH</span></div>
+            <table><tr><td><b>TCS</b></td><td class="price-down">3950.00</td><td>Crossed Below VWAP</td></tr></table>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><span>🔝 8. Day High Breakout</span><span class="badge-green">DAY HIGH</span></div>
+            <table><tr><td><b>LT</b></td><td class="price-up">3620.00</td><td>New High Of Day</td></tr></table>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><span>🔻 9. Day Low Breakdown</span><span class="badge-red">DAY LOW</span></div>
+            <table><tr><td><b>WIPRO</b></td><td class="price-down">460.00</td><td>New Low Of Day</td></tr></table>
+        </div>
+
+        <div class="card">
+            <div class="card-title"><span>🔥 10. Top Sector Gainers</span><span class="badge-green">SECTOR</span></div>
+            <table><tr><td><b>NIFTY IT</b></td><td class="price-up">+1.45%</td><td>Outperforming</td></tr></table>
+        </div>
+    </div>
+
 </body>
 </html>

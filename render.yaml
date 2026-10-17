@@ -2,5 +2,6 @@ services:
   - type: web
     name: nse-blast-backend
     env: python
+    plan: free
     buildCommand: "pip install flask requests gunicorn"
     startCommand: "gunicorn main:app"

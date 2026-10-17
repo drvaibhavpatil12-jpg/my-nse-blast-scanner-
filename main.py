@@ -1,30 +1,32 @@
-import os
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import requests
 
 app = Flask(__name__)
-
-# Kotak Neo API credentials (Render environment variables se safe rahengi)
-CONSUMER_KEY = os.environ.get('KOTAK_CONSUMER_KEY')
-CONSUMER_SECRET = os.environ.get('KOTAK_CONSUMER_SECRET')
+CORS(app)  # Frontend connection enable karne ke liye
 
 @app.route('/')
 def home():
-    return jsonify({
-        "status": "Online",
-        "message": "NSE Blast Scanner Backend is running securely!"
-    })
+    return jsonify({"status": "Backend Active", "message": "Kotak Neo API Relay Ready"})
 
-@app.route('/api/scan-data')
-def scan_data():
+@app.route('/scan', methods=['POST'])
+def scan_stocks():
+    data = request.get_json() or {}
+    
+    # Dynamic keys read karna jo dashboard se aayengi
+    consumer_key = data.get('consumer_key')
+    consumer_secret = data.get('consumer_secret')
+    
+    if not consumer_key or not consumer_secret:
+        return jsonify({"error": "Consumer Key aur Secret dono zaruri hain!"}), 400
+
+    # Yahan aapka Kotak Neo API Data Fetching logic chalega
+    # Sample response for verification
     return jsonify({
-        "scanner_status": "Active",
-        "data_source": "Kotak Neo Secure Backend",
-        "stocks": [
-            {"symbol": "RELIANCE", "ltp": 2755.00, "status": "PDH Breakout"},
-            {"symbol": "INFY", "ltp": 1420.00, "status": "PDL Breakdown"}
-        ]
+        "success": True,
+        "message": "Live Data Fetched Successfully!",
+        "data": []
     })
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=10000)

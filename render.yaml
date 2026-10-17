@@ -5,3 +5,8 @@ services:
     plan: free
     buildCommand: "pip install flask requests gunicorn"
     startCommand: "gunicorn main:app"
+    envVars:
+      - key: KOTAK_CONSUMER_KEY
+        sync: false
+      - key: KOTAK_CONSUMER_SECRET
+        sync: false

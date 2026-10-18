@@ -13,15 +13,13 @@ def home():
 def scan_stocks():
     data = request.get_json() or {}
     
-    # Dynamic keys read karna jo dashboard se aayengi
+    # Dashboard se sirf consumer_key read hoga
     consumer_key = data.get('consumer_key')
-    consumer_secret = data.get('consumer_secret')
     
-    if not consumer_key or not consumer_secret:
-        return jsonify({"error": "Consumer Key aur Secret dono zaruri hain!"}), 400
+    if not consumer_key:
+        return jsonify({"error": "Consumer Key zaruri hai!"}), 400
 
     # Yahan aapka Kotak Neo API Data Fetching logic chalega
-    # Sample response for verification
     return jsonify({
         "success": True,
         "message": "Live Data Fetched Successfully!",

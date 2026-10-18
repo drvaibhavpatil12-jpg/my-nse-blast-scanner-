@@ -1,25 +1,30 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
-import requests
 
 app = Flask(__name__)
-CORS(app)  # Frontend connection enable karne ke liye
+
+# Native CORS handling (No external library needed)
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+    return response
 
 @app.route('/')
 def home():
     return jsonify({"status": "Backend Active", "message": "Kotak Neo API Relay Ready"})
 
-@app.route('/scan', methods=['POST'])
+@app.route('/scan', methods=['POST', 'OPTIONS'])
 def scan_stocks():
+    if request.method == 'OPTIONS':
+        return jsonify({"status": "OK"}), 200
+
     data = request.get_json() or {}
-    
-    # Dashboard se sirf consumer_key read hoga
     consumer_key = data.get('consumer_key')
     
     if not consumer_key:
         return jsonify({"error": "Consumer Key zaruri hai!"}), 400
 
-    # Yahan aapka Kotak Neo API Data Fetching logic chalega
     return jsonify({
         "success": True,
         "message": "Live Data Fetched Successfully!",

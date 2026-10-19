@@ -1,5 +1,6 @@
 Flask
 requests
 ks-api-client
+gunicorn
 pandas
 ta

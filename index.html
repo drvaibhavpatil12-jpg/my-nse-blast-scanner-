@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NSE Intraday Pro Radar & Live Kotak Neo Scanner</title>
+    <title>NSE Real-Time Live Scanner</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -20,9 +20,8 @@
         .index-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; }
         .index-name { font-size: 14px; font-weight: bold; color: var(--text-sub); }
         .index-val { font-size: 18px; font-weight: bold; margin-top: 4px; }
-        .auth-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
-        input[type="password"] { flex: 1; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-color); background: #0d1117; color: #fff; font-size: 14px; }
-        button { padding: 12px 24px; background: var(--accent-green); color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
+        .control-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; display: flex; justify-content: space-between; margin-bottom: 25px; align-items: center; }
+        button { padding: 12px 24px; background: var(--accent-green); color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }
         button:hover { opacity: 0.9; }
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; }
@@ -31,8 +30,8 @@
         .badge-green { background: rgba(0, 200, 83, 0.2); color: var(--accent-green); }
         .badge-red { background: rgba(255, 61, 0, 0.2); color: var(--accent-red); }
         .badge-yellow { background: rgba(255, 214, 0, 0.2); color: var(--accent-yellow); }
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        th, td { text-align: left; padding: 8px 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { text-align: left; padding: 10px 4px; }
         th { color: var(--text-sub); }
         tr:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.05); }
         .green { color: var(--accent-green); font-weight: bold; }
@@ -43,118 +42,89 @@
 
     <div class="indices-bar">
         <div class="index-card">
-            <div><div class="index-name">NIFTY 50</div><div class="index-val" id="nifty-val">--</div></div>
-            <span class="badge badge-green" id="nifty-change">Live Feed</span>
+            <div><div class="index-name">NIFTY 50</div><div class="index-val" id="nifty-val">Loading...</div></div>
+            <span class="badge badge-green" id="nifty-change">--</span>
         </div>
         <div class="index-card">
-            <div><div class="index-name">BANK NIFTY</div><div class="index-val" id="banknifty-val">--</div></div>
-            <span class="badge badge-red" id="banknifty-change">Live Feed</span>
+            <div><div class="index-name">BANK NIFTY</div><div class="index-val" id="banknifty-val">Loading...</div></div>
+            <span class="badge badge-red" id="banknifty-change">--</span>
         </div>
         <div class="index-card">
-            <div><div class="index-name">MARKET BREADTH</div><div class="index-val" id="breadth-val">--</div></div>
-            <span class="badge badge-yellow" id="breadth-ratio">ADV / DEC</span>
+            <div><div class="index-name">STATUS</div><div class="index-val" id="status-val">READY</div></div>
+            <span class="badge badge-yellow">DIRECT LIVE</span>
         </div>
     </div>
 
-    <!-- Clean & Simple Secure Input -->
-    <div class="auth-bar">
-        <input type="password" id="consumerKey" placeholder="Enter Kotak Neo Consumer Key / API Token (Hidden)">
-        <button onclick="fetchLiveData()">SCAN REAL LIVE MARKET</button>
+    <div class="control-bar">
+        <span style="color: var(--text-sub);">Zero-Config Mode (No API Keys Needed)</span>
+        <button onclick="fetchLiveData()">🔄 SCAN LIVE MARKET DATA</button>
     </div>
 
     <div class="grid-layout">
         <div class="card" style="border: 1px solid var(--accent-green);">
-            <div class="card-header"><span>🟢 BUY CALL (6-Point Filter)</span><span class="badge badge-green">Live Feed</span></div>
+            <div class="card-header"><span>🟢 BULLISH STOCKS (Gainers)</span><span class="badge badge-green">Real Rates</span></div>
             <table>
-                <thead><tr><th>Symbol</th><th>LTP</th><th>Match</th><th>Rules Verified</th></tr></thead>
-                <tbody id="table-buy-call"><tr><td colspan="4" style="color: var(--text-sub);">Enter key & click scan</td></tr></tbody>
+                <thead><tr><th>Symbol</th><th>LTP (₹)</th><th>Chg %</th><th>Signal</th></tr></thead>
+                <tbody id="table-buy-call"><tr><td colspan="4" style="color: var(--text-sub);">Click scan button...</td></tr></tbody>
             </table>
         </div>
 
         <div class="card" style="border: 1px solid var(--accent-red);">
-            <div class="card-header"><span>🔴 SELL CALL (6-Point Filter)</span><span class="badge badge-red">Live Feed</span></div>
+            <div class="card-header"><span>🔴 BEARISH STOCKS (Losers)</span><span class="badge badge-red">Real Rates</span></div>
             <table>
-                <thead><tr><th>Symbol</th><th>LTP</th><th>Match</th><th>Rules Verified</th></tr></thead>
-                <tbody id="table-sell-call"><tr><td colspan="4" style="color: var(--text-sub);">Enter key & click scan</td></tr></tbody>
-            </table>
-        </div>
-
-        <div class="card">
-            <div class="card-header"><span>💰 Sector Money Flow</span><span class="badge badge-green">HEATMAP</span></div>
-            <table>
-                <thead><tr><th>Sector</th><th>Change</th><th>Flow Status</th></tr></thead>
-                <tbody id="table-sectors"><tr><td colspan="3" style="color: var(--text-sub);">Waiting for live data...</td></tr></tbody>
-            </table>
-        </div>
-
-        <div class="card">
-            <div class="card-header"><span>📊 Volume Shockers (> 1.5x Avg)</span><span class="badge badge-yellow">SURGE</span></div>
-            <table>
-                <thead><tr><th>Symbol</th><th>LTP</th><th>Spike</th><th>Change</th></tr></thead>
-                <tbody id="table-vol-shockers"><tr><td colspan="4" style="color: var(--text-sub);">Waiting for live data...</td></tr></tbody>
+                <thead><tr><th>Symbol</th><th>LTP (₹)</th><th>Chg %</th><th>Signal</th></tr></thead>
+                <tbody id="table-sell-call"><tr><td colspan="4" style="color: var(--text-sub);">Click scan button...</td></tr></tbody>
             </table>
         </div>
     </div>
 
     <script>
         async function fetchLiveData() {
-            const consumer_key = document.getElementById('consumerKey').value.trim();
-            if (!consumer_key) {
-                alert("Kripya Consumer Key enter karein!");
-                return;
-            }
-
+            document.getElementById('status-val').innerText = "SCANNING...";
             try {
-                const res = await fetch('https://nse-blast-backend.onrender.com/scan', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ consumer_key })
-                });
-
+                const res = await fetch('https://nse-blast-backend.onrender.com/scan');
                 const result = await res.json();
                 
-                if (result.success) {
-                    // Update Top Header Indices
-                    document.getElementById('nifty-val').innerText = '24,850.15';
-                    document.getElementById('nifty-change').innerText = '+0.65%';
-                    document.getElementById('banknifty-val').innerText = '51,420.80';
-                    document.getElementById('banknifty-change').innerText = '-0.20%';
-                    document.getElementById('breadth-val').innerText = '32 / 18';
-                    document.getElementById('breadth-ratio').innerText = 'BULLISH';
+                if (result.success && result.data) {
+                    let buyHtml = '';
+                    let sellHtml = '';
 
-                    // Update Buy Table
-                    document.getElementById('table-buy-call').innerHTML = `
-                        <tr><td><b>RELIANCE</b></td><td class="green">2,745.50</td><td>6/6</td><td><span class="badge badge-green">PASSED</span></td></tr>
-                        <tr><td><b>TATASTEEL</b></td><td class="green">158.20</td><td>6/6</td><td><span class="badge badge-green">PASSED</span></td></tr>
-                        <tr><td><b>BHARTIARTL</b></td><td class="green">1,680.00</td><td>5/6</td><td><span class="badge badge-green">PASSED</span></td></tr>
-                    `;
+                    result.data.forEach(item => {
+                        const symbol = item.symbol;
+                        const ltp = item.ltp;
+                        const chg = item.chg;
 
-                    // Update Sell Table
-                    document.getElementById('table-sell-call').innerHTML = `
-                        <tr><td><b>HDFCBANK</b></td><td class="red">1,660.10</td><td>6/6</td><td><span class="badge badge-red">PASSED</span></td></tr>
-                        <tr><td><b>INFY</b></td><td class="red">1,870.40</td><td>5/6</td><td><span class="badge badge-red">PASSED</span></td></tr>
-                    `;
+                        if (symbol === "NIFTY 50") {
+                            document.getElementById('nifty-val').innerText = ltp;
+                            document.getElementById('nifty-change').innerText = (chg >= 0 ? '+' : '') + chg + '%';
+                        } else if (symbol === "BANK NIFTY") {
+                            document.getElementById('banknifty-val').innerText = ltp;
+                            document.getElementById('banknifty-change').innerText = (chg >= 0 ? '+' : '') + chg + '%';
+                        } else {
+                            if (chg >= 0) {
+                                buyHtml += `<tr><td><b>${symbol}</b></td><td class="green">₹${ltp}</td><td class="green">+${chg}%</td><td><span class="badge badge-green">BUY</span></td></tr>`;
+                            } else {
+                                sellHtml += `<tr><td><b>${symbol}</b></td><td class="red">₹${ltp}</td><td class="red">${chg}%</td><td><span class="badge badge-red">SELL</span></td></tr>`;
+                            }
+                        }
+                    });
 
-                    // Update Sector Table
-                    document.getElementById('table-sectors').innerHTML = `
-                        <tr><td>NIFTY IT</td><td class="green">+1.45%</td><td><span class="badge badge-green">INFLOW</span></td></tr>
-                        <tr><td>NIFTY METAL</td><td class="green">+1.10%</td><td><span class="badge badge-green">INFLOW</span></td></tr>
-                        <tr><td>NIFTY BANK</td><td class="red">-0.35%</td><td><span class="badge badge-red">OUTFLOW</span></td></tr>
-                    `;
-
-                    // Update Volume Shockers Table
-                    document.getElementById('table-vol-shockers').innerHTML = `
-                        <tr><td><b>TATAMOTORS</b></td><td>985.00</td><td><span class="badge badge-yellow">2.4x</span></td><td class="green">+3.20%</td></tr>
-                        <tr><td><b>AXISBANK</b></td><td>1,165.50</td><td><span class="badge badge-yellow">1.8x</span></td><td class="red">-1.50%</td></tr>
-                    `;
+                    document.getElementById('status-val').innerText = "LIVE OK";
+                    document.getElementById('table-buy-call').innerHTML = buyHtml || '<tr><td colspan="4">No Bullish Stocks</td></tr>';
+                    document.getElementById('table-sell-call').innerHTML = sellHtml || '<tr><td colspan="4">No Bearish Stocks</td></tr>';
 
                 } else {
-                    alert("Error: " + result.error);
+                    alert("Error fetching live data!");
+                    document.getElementById('status-val').innerText = "ERROR";
                 }
             } catch (e) {
-                alert("Server Connection Error!");
+                alert("Server connecting... Please wait 30 seconds and click scan again!");
+                document.getElementById('status-val').innerText = "RETRYING";
             }
         }
+
+        // Auto fetch on load
+        window.onload = fetchLiveData;
     </script>
 </body>
 </html>

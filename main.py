@@ -56,31 +56,44 @@ def scan_stocks():
         for ticker, name in stocks_map.items():
             try:
                 if ticker in data:
-                    df = data[ticker]['Close'].dropna()
-                    if len(df) >= 2:
-                        ltp = float(df.iloc[-1])
-                        prev_close = float(df.iloc[0])
-                        chg = round(((ltp - prev_close) / prev_close) * 100, 2)
+                    df = data[ticker].dropna()
+                    if len(df) >= 10:
+                        close_series = df['Close']
+                        ltp = float(close_series.iloc[-1])
+                        prev_close = float(close_series.iloc[0]) # approximate prev close or start of day
+                        chg = round(((ltp - float(close_series.iloc[-min(375, len(close_series))])) / float(close_series.iloc[-min(375, len(close_series))])) * 100, 2)
 
-                        # Get exact candle timestamp for each stock
-                        last_timestamp = df.index[-1]
-                        if isinstance(last_timestamp, pd.Timestamp):
-                            if last_timestamp.tzinfo is None:
-                                last_timestamp = ist.localize(last_timestamp)
+                        # Find dynamic trigger time (when the stock started its sustained move during the day)
+                        is_bullish = ltp >= float(close_series.iloc[0])
+                        if is_bullish:
+                            advance_count += 1
+                            signal_label = "BUY"
+                            # Find first candle after open where price crossed above open/threshold with momentum
+                            cond_df = df[df['Close'] > df['Open']]
+                        else:
+                            decline_count += 1
+                            signal_label = "SELL"
+                            cond_df = df[df['Close'] < df['Open']]
+
+                        if not cond_df.empty:
+                            trigger_timestamp = cond_df.index[0]
+                        else:
+                            trigger_timestamp = df.index[-1]
+
+                        if isinstance(trigger_timestamp, pd.Timestamp):
+                            if trigger_timestamp.tzinfo is None:
+                                trigger_timestamp = ist.localize(trigger_timestamp)
                             else:
-                                last_timestamp = last_timestamp.astimezone(ist)
-                            time_str = last_timestamp.strftime('%I:%M:%S %p')
+                                trigger_timestamp = trigger_timestamp.astimezone(ist)
+                            time_str = trigger_timestamp.strftime('%I:%M:%S %p')
                         else:
                             time_str = datetime.now(ist).strftime('%I:%M:%S %p')
-
-                        if chg > 0: advance_count += 1
-                        elif chg < 0: decline_count += 1
 
                         parsed_stocks.append({
                             "symbol": name,
                             "ltp": round(ltp, 2),
                             "chg": chg,
-                            "signal": "BUY" if chg >= 0 else "SELL",
+                            "signal": signal_label,
                             "time": time_str
                         })
             except Exception:
@@ -101,8 +114,9 @@ def scan_stocks():
 
         sector_perf.sort(key=lambda x: x['chg'], reverse=True)
         
-        bullish_stocks = sorted([s for s in parsed_stocks if s['chg'] >= 0], key=lambda x: x['chg'], reverse=True)
-        bearish_stocks = sorted([s for s in parsed_stocks if s['chg'] < 0], key=lambda x: x['chg'])
+        # Bullish High to Low, Bearish Most Negative First
+        bullish_stocks = sorted([s for s in parsed_stocks if s['signal'] == "BUY"], key=lambda x: x['chg'], reverse=True)
+        bearish_stocks = sorted([s for s in parsed_stocks if s['signal'] == "SELL"], key=lambda x: x['chg'])
 
         final_stocks = bullish_stocks + bearish_stocks
 

@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify
+from ks_api_client import ks_api
+import os
 
 app = Flask(__name__)
 
@@ -11,7 +13,7 @@ def add_cors_headers(response):
 
 @app.route('/')
 def home():
-    return jsonify({"status": "Backend Active", "message": "Kotak Neo Intraday Radar Relay Ready"})
+    return jsonify({"status": "Backend Active", "message": "Live Kotak Neo Scanner Backend Ready"})
 
 @app.route('/scan', methods=['POST', 'OPTIONS'])
 def scan_stocks():
@@ -19,61 +21,47 @@ def scan_stocks():
         return jsonify({"status": "OK"}), 200
 
     data = request.get_json() or {}
-    consumer_key = data.get('consumer_key')
     
-    if not consumer_key:
-        return jsonify({"error": "Consumer Key zaruri hai!"}), 400
+    # User-provided credentials
+    consumer_key = data.get('consumer_key')
+    consumer_secret = data.get('consumer_secret')
+    access_token = data.get('access_token')
+    session_token = data.get('session_token')
 
-    dashboard_data = {
-        "indices": {
-            "nifty": {"ltp": 24850.20, "pchange": "+0.51%", "sentiment": "BULLISH 🚀"},
-            "banknifty": {"ltp": 51200.80, "pchange": "-0.16%", "sentiment": "BEARISH 📉"},
-            "market_breadth": {"advances": 34, "declines": 16, "ratio": "68% Bullish"}
-        },
-        "sectors": {
-            "bullish": [
-                {"name": "NIFTY IT", "change": "+1.85%", "flow": "Strong Inflow 🔥"},
-                {"name": "NIFTY AUTO", "change": "+1.20%", "flow": "Inflow 🟢"}
-            ],
-            "bearish": [
-                {"name": "NIFTY PHARMA", "change": "-0.95%", "flow": "Outflow 🔴"},
-                {"name": "NIFTY FMCG", "change": "-0.40%", "flow": "Mild Outflow 🔴"}
-            ]
-        },
-        # Exact 6-Point Filter Matched Stocks
-        "blast_6_point": {
-            "buy_call": [
-                {
-                    "symbol": "TATAMOTORS",
-                    "ltp": 980.50,
-                    "change": "+3.4%",
-                    "match": "6/6 Rules Met",
-                    "details": "Price > VWAP | > Pivot | EMA 9>20>50 | Vol > 1.5x | ADX>25 | 15M High Break"
-                }
-            ],
-            "sell_call": [
-                {
-                    "symbol": "INFY",
-                    "ltp": 1820.00,
-                    "change": "-2.1%",
-                    "match": "6/6 Rules Met",
-                    "details": "Price < VWAP | < Pivot | EMA 9<20<50 | Sell Vol > 1.5x | ADX>25 | 15M Low Break"
-                }
-            ]
-        },
-        "volume_shockers": [
-            {"symbol": "SBIN", "ltp": 835.00, "volume_spike": "4.2x Avg", "change": "+2.1%"}
-        ],
-        "vwap_crossover": [
-            {"symbol": "RELIANCE", "ltp": 2740.00, "signal": "Bullish Crossed VWAP", "change": "+1.1%"}
-        ]
-    }
+    if not consumer_key or not access_token:
+        return jsonify({
+            "success": False, 
+            "error": "Authentication Failed: Consumer Key aur Access Token zaruri hain!"
+        }), 400
 
-    return jsonify({
-        "success": True,
-        "message": "Market Radar Data Fetched Successfully!",
-        "data": dashboard_data
-    })
+    try:
+        # Initialize Real Kotak Neo SDK Client
+        client = ks_api.KSApiClient(
+            access_token=access_token,
+            consumer_key=consumer_key,
+            consumer_secret=consumer_secret,
+            app_id="NSE_BLAST_SCANNER"
+        )
+
+        # Login Session with Kotak Neo API
+        client.session_2fa(access_token=session_token)
+
+        # Live Market Feed Fetching for F&O Segment
+        # Kotak Neo Scrip Quotes Endpoint
+        quotes = client.quote(instrument_token=26000, quote_type="LTP") # Nifty 50 / F&O Quotes
+
+        # Real Live Data Response
+        return jsonify({
+            "success": True,
+            "message": "Real Live Market Data Fetched Successfully!",
+            "data": quotes
+        })
+
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": f"Kotak Neo Live API Error: {str(e)}"
+        }), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)

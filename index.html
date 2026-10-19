@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NSE Intraday Pro Radar & 6-Point Filter Scanner</title>
+    <title>NSE Intraday Pro Radar & Live Kotak Neo Scanner</title>
     <style>
         :root {
             --bg-color: #0b0e14;
@@ -25,7 +25,6 @@
             padding: 15px;
         }
 
-        /* Top Bar */
         .indices-bar {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -50,24 +49,26 @@
             background: var(--card-bg);
             border: 1px solid var(--border-color);
             border-radius: 10px;
-            padding: 12px 20px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
             margin-bottom: 25px;
+            align-items: center;
         }
 
-        input[type="text"] {
-            flex: 1;
+        input[type="password"] {
+            width: 100%;
             padding: 10px 14px;
             border-radius: 6px;
             border: 1px solid var(--border-color);
             background: #0d1117;
             color: #fff;
+            box-sizing: border-box;
         }
 
         button {
-            padding: 10px 22px;
+            padding: 12px 20px;
             background: var(--accent-green);
             color: #000;
             font-weight: bold;
@@ -75,6 +76,8 @@
             border-radius: 6px;
             cursor: pointer;
         }
+
+        button:hover { opacity: 0.9; }
 
         .grid-layout {
             display: grid;
@@ -117,7 +120,6 @@
 </head>
 <body>
 
-    <!-- Market Indices & Sentiment -->
     <div class="indices-bar">
         <div class="index-card">
             <div>
@@ -142,44 +144,42 @@
         </div>
     </div>
 
-    <!-- API Key Input -->
+    <!-- Secure Hidden Inputs for Real Live Kotak Neo API -->
     <div class="auth-bar">
-        <span style="font-weight: bold;">🔑 Kotak Neo Key:</span>
-        <input type="text" id="consumerKey" placeholder="Enter Consumer Key to scan market...">
-        <button onclick="fetchLiveData()">SCAN LIVE MARKET</button>
+        <input type="password" id="consumerKey" placeholder="Consumer Key (Hidden)">
+        <input type="password" id="consumerSecret" placeholder="Consumer Secret (Hidden)">
+        <input type="password" id="accessToken" placeholder="Access Token (Hidden)">
+        <input type="password" id="sessionToken" placeholder="Session Token / OTP (Hidden)">
+        <button onclick="fetchLiveData()">SCAN REAL LIVE MARKET</button>
     </div>
 
     <div class="grid-layout">
-
-        <!-- 1. BUY CALL (6-POINT FILTER) -->
         <div class="card" style="border: 1px solid var(--accent-green);">
             <div class="card-header">
                 <span>🟢 BUY CALL (6-Point Filter)</span>
-                <span class="badge badge-green">VWAP + Pivot + EMA + Vol + ADX + 15M ORB</span>
+                <span class="badge badge-green">Live Feed</span>
             </div>
             <table>
                 <thead><tr><th>Symbol</th><th>LTP</th><th>Match</th><th>Rules Verified</th></tr></thead>
                 <tbody id="table-buy-call">
-                    <tr><td colspan="4" style="color: var(--text-sub);">Click 'SCAN LIVE MARKET'</td></tr>
+                    <tr><td colspan="4" style="color: var(--text-sub);">Enter credentials & click scan</td></tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- 2. SELL CALL (6-POINT FILTER) -->
         <div class="card" style="border: 1px solid var(--accent-red);">
             <div class="card-header">
                 <span>🔴 SELL CALL (6-Point Filter)</span>
-                <span class="badge badge-red">VWAP + Pivot + EMA + Vol + ADX + 15M ORB</span>
+                <span class="badge badge-red">Live Feed</span>
             </div>
             <table>
                 <thead><tr><th>Symbol</th><th>LTP</th><th>Match</th><th>Rules Verified</th></tr></thead>
                 <tbody id="table-sell-call">
-                    <tr><td colspan="4" style="color: var(--text-sub);">Click 'SCAN LIVE MARKET'</td></tr>
+                    <tr><td colspan="4" style="color: var(--text-sub);">Enter credentials & click scan</td></tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- 3. Sector Money Flow -->
         <div class="card">
             <div class="card-header">
                 <span>💰 Sector Money Flow</span>
@@ -188,12 +188,11 @@
             <table>
                 <thead><tr><th>Sector</th><th>Change</th><th>Flow Status</th></tr></thead>
                 <tbody id="table-sectors">
-                    <tr><td colspan="3" style="color: var(--text-sub);">Click 'SCAN LIVE MARKET'</td></tr>
+                    <tr><td colspan="3" style="color: var(--text-sub);">Waiting for live data...</td></tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- 4. Volume Shockers -->
         <div class="card">
             <div class="card-header">
                 <span>📊 Volume Shockers (> 1.5x Avg)</span>
@@ -202,73 +201,46 @@
             <table>
                 <thead><tr><th>Symbol</th><th>LTP</th><th>Spike</th><th>Change</th></tr></thead>
                 <tbody id="table-vol-shockers">
-                    <tr><td colspan="4" style="color: var(--text-sub);">Click 'SCAN LIVE MARKET'</td></tr>
+                    <tr><td colspan="4" style="color: var(--text-sub);">Waiting for live data...</td></tr>
                 </tbody>
             </table>
         </div>
-
     </div>
 
     <script>
         async function fetchLiveData() {
-            const key = document.getElementById('consumerKey').value.trim();
-            if (!key) { alert("Consumer Key dalein!"); return; }
+            const consumer_key = document.getElementById('consumerKey').value.trim();
+            const consumer_secret = document.getElementById('consumerSecret').value.trim();
+            const access_token = document.getElementById('accessToken').value.trim();
+            const session_token = document.getElementById('sessionToken').value.trim();
+
+            if (!consumer_key || !access_token) {
+                alert("Kripya Consumer Key aur Access Token enter karein!");
+                return;
+            }
 
             try {
                 const res = await fetch('https://nse-blast-backend.onrender.com/scan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ consumer_key: key })
+                    body: JSON.stringify({ 
+                        consumer_key, 
+                        consumer_secret, 
+                        access_token, 
+                        session_token 
+                    })
                 });
 
                 const result = await res.json();
                 if (result.success) {
-                    const d = result.data;
-
-                    // Header Indices
-                    document.getElementById('nifty-val').innerText = `${d.indices.nifty.ltp} (${d.indices.nifty.pchange})`;
-                    document.getElementById('nifty-badge').innerText = d.indices.nifty.sentiment;
-
-                    document.getElementById('banknifty-val').innerText = `${d.indices.banknifty.ltp} (${d.indices.banknifty.pchange})`;
-                    document.getElementById('banknifty-badge').innerText = d.indices.banknifty.sentiment;
-
-                    document.getElementById('breadth-val').innerText = `${d.indices.market_breadth.advances} A / ${d.indices.market_breadth.declines} D`;
-                    document.getElementById('breadth-badge').innerText = d.indices.market_breadth.ratio;
-
-                    // 6-Point BUY CALL Table
-                    document.getElementById('table-buy-call').innerHTML = d.blast_6_point.buy_call.map(s => `
-                        <tr>
-                            <td><b>${s.symbol}</b><div class="rule-desc">${s.change}</div></td>
-                            <td class="green">₹${s.ltp}</td>
-                            <td><span class="badge badge-green">${s.match}</span></td>
-                            <td><div class="rule-desc">${s.details}</div></td>
-                        </tr>
-                    `).join('');
-
-                    // 6-Point SELL CALL Table
-                    document.getElementById('table-sell-call').innerHTML = d.blast_6_point.sell_call.map(s => `
-                        <tr>
-                            <td><b>${s.symbol}</b><div class="rule-desc">${s.change}</div></td>
-                            <td class="red">₹${s.ltp}</td>
-                            <td><span class="badge badge-red">${s.match}</span></td>
-                            <td><div class="rule-desc">${s.details}</div></td>
-                        </tr>
-                    `).join('');
-
-                    // Sector Money Flow
-                    let sectorHtml = '';
-                    d.sectors.bullish.forEach(s => sectorHtml += `<tr><td><b>${s.name}</b></td><td class="green">${s.change}</td><td class="green">${s.flow}</td></tr>`);
-                    d.sectors.bearish.forEach(s => sectorHtml += `<tr><td><b>${s.name}</b></td><td class="red">${s.change}</td><td class="red">${s.flow}</td></tr>`);
-                    document.getElementById('table-sectors').innerHTML = sectorHtml;
-
-                    // Volume Shockers
-                    document.getElementById('table-vol-shockers').innerHTML = d.volume_shockers.map(s => `
-                        <tr><td><b>${s.symbol}</b></td><td>₹${s.ltp}</td><td class="green">${s.volume_spike}</td><td>${s.change}</td></tr>
-                    `).join('');
-
+                    alert("Real Live Data Connected Successfully!");
+                    console.log(result.data);
+                } else {
+                    alert("Error: " + result.error);
                 }
             } catch (e) {
                 alert("Server Connection Error!");
+                console.error(e);
             }
         }
     </script>

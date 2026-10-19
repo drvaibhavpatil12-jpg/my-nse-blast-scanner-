@@ -18,18 +18,21 @@
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; }
         .top-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 15px; }
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; }
-        .sec-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 20px; }
-        .sec-badge { background: var(--card-bg); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 8px; font-size: 13px; white-space: nowrap; font-weight: bold; }
-        .control-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; }
+        
+        /* Compact Sector Grid */
+        .sec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin-bottom: 20px; }
+        .sec-badge { background: var(--card-bg); border: 1px solid var(--border-color); padding: 8px 10px; border-radius: 8px; font-size: 12px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; }
+
+        .control-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; flex-wrap: wrap; gap: 10px; }
         button { padding: 12px 24px; background: var(--accent-green); color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; font-size: 15px; }
         .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 14px; }
-        th, td { text-align: left; padding: 10px 4px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th, td { text-align: left; padding: 8px 4px; }
         th { color: var(--text-sub); }
         tr:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.05); }
         .green { color: var(--accent-green); font-weight: bold; }
         .red { color: var(--accent-red); font-weight: bold; }
-        .badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
+        .badge { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
         .badge-green { background: rgba(0, 200, 83, 0.2); color: var(--accent-green); }
         .badge-red { background: rgba(255, 61, 0, 0.2); color: var(--accent-red); }
     </style>
@@ -47,50 +50,46 @@
         </div>
     </div>
 
-    <!-- Sector Performance High to Low -->
-    <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; color: var(--text-sub);">SECTOR PERFORMANCE (High to Low)</div>
-    <div class="sec-scroll" id="sector-bar">
-        <div class="sec-badge">Click scan button...</div>
+    <!-- Sector Performance Grid (Clean & Compact) -->
+    <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px; color: var(--text-sub);">SECTOR PERFORMANCE (High to Low)</div>
+    <div class="sec-grid" id="sector-bar">
+        <div class="sec-badge">Loading sectors...</div>
     </div>
 
     <div class="control-bar">
-        <span style="color: var(--text-sub);">Strategy: VWAP + Pivot + EMA + Volume + ORB</span>
-        <button id="scan-btn" onclick="fetchLiveData()">🔄 SCAN FULL FNO MARKET</button>
+        <span style="color: var(--text-sub); font-size: 13px;">Strategy: VWAP + Pivot + EMA + Volume + ORB</span>
+        <button id="scan-btn" onclick="fetchLiveData()">🔄 SCAN MARKET</button>
     </div>
 
     <div class="grid-layout">
         <div class="card" style="border: 1px solid var(--accent-green);">
             <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between;">
-                <span>🟢 BULLISH STOCKS (Buy Signal)</span><span class="badge badge-green">Strategy Matched</span>
+                <span>🟢 BULLISH STOCKS</span><span class="badge badge-green">Low to High %</span>
             </div>
             <table>
-                <thead><tr><th>Symbol</th><th>LTP (₹)</th><th>Chg %</th><th>Signal</th></tr></thead>
-                <tbody id="table-buy"><tr><td colspan="4" style="color: var(--text-sub);">Click scan...</td></tr></tbody>
+                <thead><tr><th>Symbol</th><th>LTP</th><th>Chg %</th><th>Time</th><th>Signal</th></tr></thead>
+                <tbody id="table-buy"><tr><td colspan="5" style="color: var(--text-sub);">Click scan...</td></tr></tbody>
             </table>
         </div>
 
         <div class="card" style="border: 1px solid var(--accent-red);">
             <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px; display: flex; justify-content: space-between;">
-                <span>🔴 BEARISH STOCKS (Sell Signal)</span><span class="badge badge-red">Strategy Matched</span>
+                <span>🔴 BEARISH STOCKS</span><span class="badge badge-red">High Drop</span>
             </div>
             <table>
-                <thead><tr><th>Symbol</th><th>LTP (₹)</th><th>Chg %</th><th>Signal</th></tr></thead>
-                <tbody id="table-sell"><tr><td colspan="4" style="color: var(--text-sub);">Click scan...</td></tr></tbody>
+                <thead><tr><th>Symbol</th><th>LTP</th><th>Chg %</th><th>Time</th><th>Signal</th></tr></thead>
+                <tbody id="table-sell"><tr><td colspan="5" style="color: var(--text-sub);">Click scan...</td></tr></tbody>
             </table>
         </div>
     </div>
 
     <script>
         async function fetchLiveData() {
-            document.getElementById('status-val').innerText = "FETCHING (Please wait)...";
+            document.getElementById('status-val').innerText = "SCANNING...";
             document.getElementById('scan-btn').disabled = true;
-            
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s extended timeout
 
             try {
-                const res = await fetch('https://nse-blast-backend.onrender.com/scan', { signal: controller.signal });
-                clearTimeout(timeoutId);
+                const res = await fetch('https://nse-blast-backend.onrender.com/scan');
                 const result = await res.json();
                 
                 if (result.success) {
@@ -98,13 +97,13 @@
                     document.getElementById('dec-count').innerText = result.decline;
                     document.getElementById('status-val').innerText = "LIVE OK";
 
-                    // Render Sectors
+                    // Render Sectors Grid
                     let secHtml = '';
                     result.sectors.forEach(sec => {
                         let cls = sec.chg >= 0 ? 'green' : 'red';
-                        secHtml += `<div class="sec-badge">${sec.sector}: <span class="${cls}">${sec.chg >= 0 ? '+' : ''}${sec.chg}%</span></div>`;
+                        secHtml += `<div class="sec-badge"><span>${sec.sector}</span><span class="${cls}">${sec.chg >= 0 ? '+' : ''}${sec.chg}%</span></div>`;
                     });
-                    document.getElementById('sector-bar').innerHTML = secHtml || '<div>No sector data</div>';
+                    document.getElementById('sector-bar').innerHTML = secHtml;
 
                     // Render Stocks
                     let buyHtml = '';
@@ -112,20 +111,20 @@
 
                     result.data.forEach(item => {
                         if (item.chg >= 0) {
-                            buyHtml += `<tr><td><b>${item.symbol}</b></td><td class="green">₹${item.ltp}</td><td class="green">+${item.chg}%</td><td><span class="badge badge-green">BUY</span></td></tr>`;
+                            buyHtml += `<tr><td><b>${item.symbol}</b></td><td class="green">₹${item.ltp}</td><td class="green">+${item.chg}%</td><td style="font-size:11px; color:#8b949e;">${item.time}</td><td><span class="badge badge-green">BUY</span></td></tr>`;
                         } else {
-                            sellHtml += `<tr><td><b>${item.symbol}</b></td><td class="red">₹${item.ltp}</td><td class="red">${item.chg}%</td><td><span class="badge badge-red">SELL</span></td></tr>`;
+                            sellHtml += `<tr><td><b>${item.symbol}</b></td><td class="red">₹${item.ltp}</td><td class="red">${item.chg}%</td><td style="font-size:11px; color:#8b949e;">${item.time}</td><td><span class="badge badge-red">SELL</span></td></tr>`;
                         }
                     });
 
-                    document.getElementById('table-buy').innerHTML = buyHtml || '<tr><td colspan="4">No Buy Stocks</td></tr>';
-                    document.getElementById('table-sell').innerHTML = sellHtml || '<tr><td colspan="4">No Sell Stocks</td></tr>';
+                    document.getElementById('table-buy').innerHTML = buyHtml || '<tr><td colspan="5">No Buy Stocks</td></tr>';
+                    document.getElementById('table-sell').innerHTML = sellHtml || '<tr><td colspan="5">No Sell Stocks</td></tr>';
 
                 } else {
                     document.getElementById('status-val').innerText = "ERROR";
                 }
             } catch (e) {
-                document.getElementById('status-val').innerText = "SERVER WAKING UP - RETRY IN 10s";
+                document.getElementById('status-val').innerText = "RETRYING...";
             } finally {
                 document.getElementById('scan-btn').disabled = false;
             }

@@ -13,7 +13,7 @@ def add_cors_headers(response):
 
 @app.route('/')
 def home():
-    return jsonify({"status": "Backend Active", "provider": "Direct Live Feed"})
+    return jsonify({"status": "Backend Active", "provider": "Direct Live Feed - Full FNO"})
 
 @app.route('/scan', methods=['GET', 'POST', 'OPTIONS'])
 def scan_stocks():
@@ -74,9 +74,10 @@ def scan_stocks():
         }
 
         all_tickers = list(stocks_map.keys()) + list(sectors_map.keys())
+        tickers_str = " ".join(all_tickers)
         
-        # Fast bulk download
-        df_raw = yf.download(all_tickers, period="2d", interval="1d", progress=False, timeout=10)['Close']
+        # Download data directly as string for yfinance optimization
+        data = yf.download(tickers_str, period="5d", interval="1d", progress=False, group_by='ticker', threads=True)
 
         parsed_stocks = []
         advance_count = 0
@@ -84,34 +85,36 @@ def scan_stocks():
 
         for ticker, name in stocks_map.items():
             try:
-                if ticker in df_raw and len(df_raw[ticker].dropna()) >= 2:
-                    s = df_raw[ticker].dropna()
-                    ltp = float(s.iloc[-1])
-                    prev_close = float(s.iloc[0])
-                    chg = round(((ltp - prev_close) / prev_close) * 100, 2)
+                if ticker in data:
+                    df = data[ticker]['Close'].dropna()
+                    if len(df) >= 2:
+                        ltp = float(df.iloc[-1])
+                        prev_close = float(df.iloc[-2])
+                        chg = round(((ltp - prev_close) / prev_close) * 100, 2)
 
-                    if chg > 0: advance_count += 1
-                    elif chg < 0: decline_count += 1
+                        if chg > 0: advance_count += 1
+                        elif chg < 0: decline_count += 1
 
-                    parsed_stocks.append({
-                        "symbol": name,
-                        "ltp": round(ltp, 2),
-                        "chg": chg,
-                        "signal": "BUY" if chg >= 0 else "SELL"
-                    })
-            except:
+                        parsed_stocks.append({
+                            "symbol": name,
+                            "ltp": round(ltp, 2),
+                            "chg": chg,
+                            "signal": "BUY" if chg >= 0 else "SELL"
+                        })
+            except Exception:
                 continue
 
         sector_perf = []
         for ticker, name in sectors_map.items():
             try:
-                if ticker in df_raw and len(df_raw[ticker].dropna()) >= 2:
-                    s = df_raw[ticker].dropna()
-                    ltp = float(s.iloc[-1])
-                    prev_close = float(s.iloc[0])
-                    chg = round(((ltp - prev_close) / prev_close) * 100, 2)
-                    sector_perf.append({"sector": name, "chg": chg})
-            except:
+                if ticker in data:
+                    df = data[ticker]['Close'].dropna()
+                    if len(df) >= 2:
+                        ltp = float(df.iloc[-1])
+                        prev_close = float(df.iloc[-2])
+                        chg = round(((ltp - prev_close) / prev_close) * 100, 2)
+                        sector_perf.append({"sector": name, "chg": chg})
+            except Exception:
                 continue
 
         sector_perf.sort(key=lambda x: x['chg'], reverse=True)

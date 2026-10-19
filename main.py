@@ -89,12 +89,11 @@ def scan_stocks():
             except Exception:
                 continue
 
-        # Sort sectors High to Low
         sector_perf.sort(key=lambda x: x['chg'], reverse=True)
         
-        # Sort stocks: Bullish low change on top (ascending), Bearish high drop on top
-        bullish_stocks = sorted([s for s in parsed_stocks if s['chg'] >= 0], key=lambda x: x['chg'])
-        bearish_stocks = sorted([s for s in parsed_stocks if s['chg'] < 0], key=lambda x: x['chg']) # most negative first
+        # Sorting: Bullish High to Low (% change descending), Bearish Most Negative First (ascending)
+        bullish_stocks = sorted([s for s in parsed_stocks if s['chg'] >= 0], key=lambda x: x['chg'], reverse=True)
+        bearish_stocks = sorted([s for s in parsed_stocks if s['chg'] < 0], key=lambda x: x['chg'])
 
         final_stocks = bullish_stocks + bearish_stocks
 

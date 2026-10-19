@@ -48,7 +48,6 @@ def scan_stocks():
         data = yf.download(all_tickers, period="2d", interval="1m", progress=False, group_by='ticker', threads=True)
 
         ist = pytz.timezone('Asia/Kolkata')
-        current_time = datetime.now(ist).strftime('%H:%M:%S')
 
         parsed_stocks = []
         advance_count = 0
@@ -63,6 +62,17 @@ def scan_stocks():
                         prev_close = float(df.iloc[0])
                         chg = round(((ltp - prev_close) / prev_close) * 100, 2)
 
+                        # Get exact candle timestamp for each stock
+                        last_timestamp = df.index[-1]
+                        if isinstance(last_timestamp, pd.Timestamp):
+                            if last_timestamp.tzinfo is None:
+                                last_timestamp = ist.localize(last_timestamp)
+                            else:
+                                last_timestamp = last_timestamp.astimezone(ist)
+                            time_str = last_timestamp.strftime('%I:%M:%S %p')
+                        else:
+                            time_str = datetime.now(ist).strftime('%I:%M:%S %p')
+
                         if chg > 0: advance_count += 1
                         elif chg < 0: decline_count += 1
 
@@ -71,7 +81,7 @@ def scan_stocks():
                             "ltp": round(ltp, 2),
                             "chg": chg,
                             "signal": "BUY" if chg >= 0 else "SELL",
-                            "time": current_time
+                            "time": time_str
                         })
             except Exception:
                 continue
@@ -91,7 +101,6 @@ def scan_stocks():
 
         sector_perf.sort(key=lambda x: x['chg'], reverse=True)
         
-        # Sorting: Bullish High to Low (% change descending), Bearish Most Negative First (ascending)
         bullish_stocks = sorted([s for s in parsed_stocks if s['chg'] >= 0], key=lambda x: x['chg'], reverse=True)
         bearish_stocks = sorted([s for s in parsed_stocks if s['chg'] < 0], key=lambda x: x['chg'])
 

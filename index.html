@@ -50,12 +50,12 @@
     <!-- Sector Performance High to Low -->
     <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; color: var(--text-sub);">SECTOR PERFORMANCE (High to Low)</div>
     <div class="sec-scroll" id="sector-bar">
-        <div class="sec-badge">Loading sectors...</div>
+        <div class="sec-badge">Click scan button...</div>
     </div>
 
     <div class="control-bar">
         <span style="color: var(--text-sub);">Strategy: VWAP + Pivot + EMA + Volume + ORB</span>
-        <button onclick="fetchLiveData()">🔄 SCAN FULL FNO MARKET</button>
+        <button id="scan-btn" onclick="fetchLiveData()">🔄 SCAN FULL FNO MARKET</button>
     </div>
 
     <div class="grid-layout">
@@ -82,10 +82,15 @@
 
     <script>
         async function fetchLiveData() {
-            document.getElementById('status-valinnerText', 'SCANNING...');
-            document.getElementById('status-val').innerText = "SCANNING...";
+            document.getElementById('status-val').innerText = "FETCHING (Please wait)...";
+            document.getElementById('scan-btn').disabled = true;
+            
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s extended timeout
+
             try {
-                const res = await fetch('https://nse-blast-backend.onrender.com/scan');
+                const res = await fetch('https://nse-blast-backend.onrender.com/scan', { signal: controller.signal });
+                clearTimeout(timeoutId);
                 const result = await res.json();
                 
                 if (result.success) {
@@ -99,7 +104,7 @@
                         let cls = sec.chg >= 0 ? 'green' : 'red';
                         secHtml += `<div class="sec-badge">${sec.sector}: <span class="${cls}">${sec.chg >= 0 ? '+' : ''}${sec.chg}%</span></div>`;
                     });
-                    document.getElementById('sector-bar').innerHTML = secHtml;
+                    document.getElementById('sector-bar').innerHTML = secHtml || '<div>No sector data</div>';
 
                     // Render Stocks
                     let buyHtml = '';
@@ -117,12 +122,12 @@
                     document.getElementById('table-sell').innerHTML = sellHtml || '<tr><td colspan="4">No Sell Stocks</td></tr>';
 
                 } else {
-                    alert("Error loading scanner!");
                     document.getElementById('status-val').innerText = "ERROR";
                 }
             } catch (e) {
-                alert("Server waking up... Please wait 30 seconds and click scan again!");
-                document.getElementById('status-val').innerText = "RETRYING";
+                document.getElementById('status-val').innerText = "SERVER WAKING UP - RETRY IN 10s";
+            } finally {
+                document.getElementById('scan-btn').disabled = false;
             }
         }
 

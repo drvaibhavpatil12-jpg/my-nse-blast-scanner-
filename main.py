@@ -13,7 +13,7 @@ def add_cors_headers(response):
 
 @app.route('/')
 def home():
-    return jsonify({"status": "Backend Active", "provider": "Direct Live Feed - Full FNO"})
+    return jsonify({"status": "Backend Active", "provider": "Direct Live Feed"})
 
 @app.route('/scan', methods=['GET', 'POST', 'OPTIONS'])
 def scan_stocks():
@@ -21,7 +21,6 @@ def scan_stocks():
         return jsonify({"status": "OK"}), 200
 
     try:
-        # Complete User Provided Stock List mapping to Yahoo Finance symbols
         stocks_map = {
             "ADANIENSOL.NS": "ADANIENSOL", "GAIL.NS": "GAIL", "JSWENERGY.NS": "JSWENERGY", "NHPC.NS": "NHPC", "NTPC.NS": "NTPC",
             "ADANIGREEN.NS": "ADANIGREEN", "TATAPOWER.NS": "TATAPOWER", "ADANIPOWER.NS": "ADANIPOWER", "POWERGRID.NS": "POWERGRID",
@@ -68,26 +67,16 @@ def scan_stocks():
             "PETRONET.NS": "PETRONET", "OIL.NS": "OIL", "BPCL.NS": "BPCL", "ONGC.NS": "ONGC", "RELIANCE.NS": "RELIANCE"
         }
 
-        # Indices & Sectors Map
         sectors_map = {
-            "^NSEI": "NIFTY 50",
-            "^NSEBANK": "BANKNIFTY",
-            "^CNXAUTO": "AUTO",
-            "^CNXMETAL": "METAL",
-            "^CNXIT": "IT",
-            "^CNXPHARMA": "PHARMA",
-            "^CNXFMCG": "FMCG",
-            "^CNXREALTY": "REALTY",
-            "^CNXENERGY": "ENERGY",
-            "^CNXINFRA": "DEFENCE/INFRA",
-            "^CNXPSUBANK": "PSU BANK",
-            "^CNXFINANCE": "FINANCE"
+            "^NSEI": "NIFTY 50", "^NSEBANK": "BANKNIFTY", "^CNXAUTO": "AUTO", "^CNXMETAL": "METAL",
+            "^CNXIT": "IT", "^CNXPHARMA": "PHARMA", "^CNXFMCG": "FMCG", "^CNXREALTY": "REALTY",
+            "^CNXENERGY": "ENERGY", "^CNXINFRA": "DEFENCE", "^CNXPSUBANK": "PSU BANK", "^CNXFINANCE": "FINANCE"
         }
 
-        all_symbols = list(stocks_map.keys()) + list(sectors_map.keys())
+        all_tickers = list(stocks_map.keys()) + list(sectors_map.keys())
         
-        # Batch download data
-        data = yf.download(all_symbols, period="2d", interval="1m", progress=False, group_by='ticker', timeout=15)
+        # Fast bulk download
+        df_raw = yf.download(all_tickers, period="2d", interval="1d", progress=False, timeout=10)['Close']
 
         parsed_stocks = []
         advance_count = 0
@@ -95,12 +84,12 @@ def scan_stocks():
 
         for ticker, name in stocks_map.items():
             try:
-                df = data[ticker]['Close'].dropna() if ticker in data else pd.Series()
-                if len(df) >= 2:
-                    ltp = float(df.iloc[-1])
-                    prev_close = float(df.iloc[0])
+                if ticker in df_raw and len(df_raw[ticker].dropna()) >= 2:
+                    s = df_raw[ticker].dropna()
+                    ltp = float(s.iloc[-1])
+                    prev_close = float(s.iloc[0])
                     chg = round(((ltp - prev_close) / prev_close) * 100, 2)
-                    
+
                     if chg > 0: advance_count += 1
                     elif chg < 0: decline_count += 1
 
@@ -108,28 +97,24 @@ def scan_stocks():
                         "symbol": name,
                         "ltp": round(ltp, 2),
                         "chg": chg,
-                        "signal": "BUY" if chg > 0 else "SELL"
+                        "signal": "BUY" if chg >= 0 else "SELL"
                     })
             except:
                 continue
 
-        # Sector Performance Calculation
         sector_perf = []
         for ticker, name in sectors_map.items():
             try:
-                df = data[ticker]['Close'].dropna() if ticker in data else pd.Series()
-                if len(df) >= 2:
-                    ltp = float(df.iloc[-1])
-                    prev_close = float(df.iloc[0])
+                if ticker in df_raw and len(df_raw[ticker].dropna()) >= 2:
+                    s = df_raw[ticker].dropna()
+                    ltp = float(s.iloc[-1])
+                    prev_close = float(s.iloc[0])
                     chg = round(((ltp - prev_close) / prev_close) * 100, 2)
                     sector_perf.append({"sector": name, "chg": chg})
             except:
                 continue
 
-        # Sort Sectors High to Low
         sector_perf.sort(key=lambda x: x['chg'], reverse=True)
-        
-        # Sort Stocks by % Change
         parsed_stocks.sort(key=lambda x: x['chg'], reverse=True)
 
         return jsonify({

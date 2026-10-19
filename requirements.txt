@@ -1,6 +1,3 @@
 Flask
-requests
-ks-api-client
-gunicorn
+yfinance 
 pandas
-ta

@@ -13,196 +13,83 @@
             --text-sub: #8b949e;
             --accent-green: #00c853;
             --accent-red: #ff3d00;
-            --accent-blue: #29b6f6;
             --accent-yellow: #ffd600;
         }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 15px;
-        }
-
-        .indices-bar {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .index-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 12px 18px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; }
+        .indices-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .index-card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px 18px; display: flex; justify-content: space-between; align-items: center; }
         .index-name { font-size: 14px; font-weight: bold; color: var(--text-sub); }
         .index-val { font-size: 18px; font-weight: bold; margin-top: 4px; }
-
-        .auth-bar {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 15px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 25px;
-            align-items: center;
-        }
-
-        input[type="password"] {
-            width: 100%;
-            padding: 10px 14px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: #0d1117;
-            color: #fff;
-            box-sizing: border-box;
-        }
-
-        button {
-            padding: 12px 20px;
-            background: var(--accent-green);
-            color: #000;
-            font-weight: bold;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
+        .auth-bar { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 15px; display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
+        input[type="password"] { flex: 1; padding: 12px 14px; border-radius: 6px; border: 1px solid var(--border-color); background: #0d1117; color: #fff; font-size: 14px; }
+        button { padding: 12px 24px; background: var(--accent-green); color: #000; font-weight: bold; border: none; border-radius: 6px; cursor: pointer; }
         button:hover { opacity: 0.9; }
-
-        .grid-layout {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
-            gap: 20px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 16px;
-        }
-
-        .card-header {
-            font-size: 15px;
-            font-weight: bold;
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-            margin-bottom: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
+        .grid-layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; padding: 16px; }
+        .card-header { font-size: 15px; font-weight: bold; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
         .badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: bold; }
         .badge-green { background: rgba(0, 200, 83, 0.2); color: var(--accent-green); }
         .badge-red { background: rgba(255, 61, 0, 0.2); color: var(--accent-red); }
         .badge-yellow { background: rgba(255, 214, 0, 0.2); color: var(--accent-yellow); }
-
         table { width: 100%; border-collapse: collapse; font-size: 13px; }
         th, td { text-align: left; padding: 8px 4px; }
         th { color: var(--text-sub); }
         tr:not(:last-child) { border-bottom: 1px solid rgba(255,255,255,0.05); }
-
-        .green { color: var(--accent-green); font-weight: bold; }
-        .red { color: var(--accent-red); font-weight: bold; }
-        .rule-desc { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
     </style>
 </head>
 <body>
 
     <div class="indices-bar">
         <div class="index-card">
-            <div>
-                <div class="index-name">NIFTY 50</div>
-                <div class="index-val" id="nifty-val">--</div>
-            </div>
-            <span id="nifty-badge" class="badge badge-green">--</span>
+            <div><div class="index-name">NIFTY 50</div><div class="index-val" id="nifty-val">--</div></div>
+            <span class="badge badge-green">Live Feed</span>
         </div>
         <div class="index-card">
-            <div>
-                <div class="index-name">BANK NIFTY</div>
-                <div class="index-val" id="banknifty-val">--</div>
-            </div>
-            <span id="banknifty-badge" class="badge badge-red">--</span>
+            <div><div class="index-name">BANK NIFTY</div><div class="index-val" id="banknifty-val">--</div></div>
+            <span class="badge badge-red">Live Feed</span>
         </div>
         <div class="index-card">
-            <div>
-                <div class="index-name">MARKET BREADTH</div>
-                <div class="index-val" id="breadth-val">--</div>
-            </div>
-            <span id="breadth-badge" class="badge badge-yellow">ADV / DEC</span>
+            <div><div class="index-name">MARKET BREADTH</div><div class="index-val" id="breadth-val">--</div></div>
+            <span class="badge badge-yellow">ADV / DEC</span>
         </div>
     </div>
 
-    <!-- Secure Hidden Inputs for Real Live Kotak Neo API -->
+    <!-- Clean & Simple Secure Input -->
     <div class="auth-bar">
-        <input type="password" id="consumerKey" placeholder="Consumer Key (Hidden)">
-        <input type="password" id="consumerSecret" placeholder="Consumer Secret (Hidden)">
-        <input type="password" id="accessToken" placeholder="Access Token (Hidden)">
-        <input type="password" id="sessionToken" placeholder="Session Token / OTP (Hidden)">
+        <input type="password" id="consumerKey" placeholder="Enter Kotak Neo Consumer Key / API Token (Hidden)">
         <button onclick="fetchLiveData()">SCAN REAL LIVE MARKET</button>
     </div>
 
     <div class="grid-layout">
         <div class="card" style="border: 1px solid var(--accent-green);">
-            <div class="card-header">
-                <span>🟢 BUY CALL (6-Point Filter)</span>
-                <span class="badge badge-green">Live Feed</span>
-            </div>
+            <div class="card-header"><span>🟢 BUY CALL (6-Point Filter)</span><span class="badge badge-green">Live Feed</span></div>
             <table>
                 <thead><tr><th>Symbol</th><th>LTP</th><th>Match</th><th>Rules Verified</th></tr></thead>
-                <tbody id="table-buy-call">
-                    <tr><td colspan="4" style="color: var(--text-sub);">Enter credentials & click scan</td></tr>
-                </tbody>
+                <tbody id="table-buy-call"><tr><td colspan="4" style="color: var(--text-sub);">Enter key & click scan</td></tr></tbody>
             </table>
         </div>
 
         <div class="card" style="border: 1px solid var(--accent-red);">
-            <div class="card-header">
-                <span>🔴 SELL CALL (6-Point Filter)</span>
-                <span class="badge badge-red">Live Feed</span>
-            </div>
+            <div class="card-header"><span>🔴 SELL CALL (6-Point Filter)</span><span class="badge badge-red">Live Feed</span></div>
             <table>
                 <thead><tr><th>Symbol</th><th>LTP</th><th>Match</th><th>Rules Verified</th></tr></thead>
-                <tbody id="table-sell-call">
-                    <tr><td colspan="4" style="color: var(--text-sub);">Enter credentials & click scan</td></tr>
-                </tbody>
+                <tbody id="table-sell-call"><tr><td colspan="4" style="color: var(--text-sub);">Enter key & click scan</td></tr></tbody>
             </table>
         </div>
 
         <div class="card">
-            <div class="card-header">
-                <span>💰 Sector Money Flow</span>
-                <span class="badge badge-green">HEATMAP</span>
-            </div>
+            <div class="card-header"><span>💰 Sector Money Flow</span><span class="badge badge-green">HEATMAP</span></div>
             <table>
                 <thead><tr><th>Sector</th><th>Change</th><th>Flow Status</th></tr></thead>
-                <tbody id="table-sectors">
-                    <tr><td colspan="3" style="color: var(--text-sub);">Waiting for live data...</td></tr>
-                </tbody>
+                <tbody id="table-sectors"><tr><td colspan="3" style="color: var(--text-sub);">Waiting for live data...</td></tr></tbody>
             </table>
         </div>
 
         <div class="card">
-            <div class="card-header">
-                <span>📊 Volume Shockers (> 1.5x Avg)</span>
-                <span class="badge badge-yellow">SURGE</span>
-            </div>
+            <div class="card-header"><span>📊 Volume Shockers (> 1.5x Avg)</span><span class="badge badge-yellow">SURGE</span></div>
             <table>
                 <thead><tr><th>Symbol</th><th>LTP</th><th>Spike</th><th>Change</th></tr></thead>
-                <tbody id="table-vol-shockers">
-                    <tr><td colspan="4" style="color: var(--text-sub);">Waiting for live data...</td></tr>
-                </tbody>
+                <tbody id="table-vol-shockers"><tr><td colspan="4" style="color: var(--text-sub);">Waiting for live data...</td></tr></tbody>
             </table>
         </div>
     </div>
@@ -210,27 +97,16 @@
     <script>
         async function fetchLiveData() {
             const consumer_key = document.getElementById('consumerKey').value.trim();
-            const consumer_secret = document.getElementById('consumerSecret').value.trim();
-            const access_token = document.getElementById('accessToken').value.trim();
-            const session_token = document.getElementById('sessionToken').value.trim();
-
-            if (!consumer_key || !access_token) {
-                alert("Kripya Consumer Key aur Access Token enter karein!");
+            if (!consumer_key) {
+                alert("Kripya Consumer Key enter karein!");
                 return;
             }
-
             try {
                 const res = await fetch('https://nse-blast-backend.onrender.com/scan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        consumer_key, 
-                        consumer_secret, 
-                        access_token, 
-                        session_token 
-                    })
+                    body: JSON.stringify({ consumer_key })
                 });
-
                 const result = await res.json();
                 if (result.success) {
                     alert("Real Live Data Connected Successfully!");
@@ -240,7 +116,6 @@
                 }
             } catch (e) {
                 alert("Server Connection Error!");
-                console.error(e);
             }
         }
     </script>

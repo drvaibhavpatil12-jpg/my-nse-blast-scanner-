@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
 import yfinance as yf
 import pandas as pd
+from datetime import datetime
+import pytz
 
 app = Flask(__name__)
 
@@ -13,7 +15,7 @@ def add_cors_headers(response):
 
 @app.route('/')
 def home():
-    return jsonify({"status": "Backend Active", "provider": "Instant FNO Engine"})
+    return jsonify({"status": "Backend Active"})
 
 @app.route('/scan', methods=['GET', 'POST', 'OPTIONS'])
 def scan_stocks():
@@ -21,7 +23,6 @@ def scan_stocks():
         return jsonify({"status": "OK"}), 200
 
     try:
-        # Optimized Top 50 High-Liquidity F&O Stocks covering all sectors (Zero Timeout)
         stocks_map = {
             "RELIANCE.NS": "RELIANCE", "TCS.NS": "TCS", "HDFCBANK.NS": "HDFCBANK", "ICICIBANK.NS": "ICICIBANK",
             "INFY.NS": "INFY", "SBIN.NS": "SBIN", "BHARTIARTL.NS": "BHARTIARTL", "LICI.NS": "LICI",
@@ -44,9 +45,10 @@ def scan_stocks():
         }
 
         all_tickers = list(stocks_map.keys()) + list(sectors_map.keys())
-        
-        # Fast bulk download
-        data = yf.download(all_tickers, period="2d", interval="1d", progress=False, group_by='ticker', threads=True)
+        data = yf.download(all_tickers, period="2d", interval="1m", progress=False, group_by='ticker', threads=True)
+
+        ist = pytz.timezone('Asia/Kolkata')
+        current_time = datetime.now(ist).strftime('%H:%M:%S')
 
         parsed_stocks = []
         advance_count = 0
@@ -68,7 +70,8 @@ def scan_stocks():
                             "symbol": name,
                             "ltp": round(ltp, 2),
                             "chg": chg,
-                            "signal": "BUY" if chg >= 0 else "SELL"
+                            "signal": "BUY" if chg >= 0 else "SELL",
+                            "time": current_time
                         })
             except Exception:
                 continue
@@ -86,15 +89,21 @@ def scan_stocks():
             except Exception:
                 continue
 
+        # Sort sectors High to Low
         sector_perf.sort(key=lambda x: x['chg'], reverse=True)
-        parsed_stocks.sort(key=lambda x: x['chg'], reverse=True)
+        
+        # Sort stocks: Bullish low change on top (ascending), Bearish high drop on top
+        bullish_stocks = sorted([s for s in parsed_stocks if s['chg'] >= 0], key=lambda x: x['chg'])
+        bearish_stocks = sorted([s for s in parsed_stocks if s['chg'] < 0], key=lambda x: x['chg']) # most negative first
+
+        final_stocks = bullish_stocks + bearish_stocks
 
         return jsonify({
             "success": True,
             "advance": advance_count,
             "decline": decline_count,
             "sectors": sector_perf,
-            "data": parsed_stocks
+            "data": final_stocks
         })
 
     except Exception as e:

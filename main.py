@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import yfinance as yf
 
 app = Flask(__name__)
@@ -12,7 +12,7 @@ def add_cors_headers(response):
 
 @app.route('/')
 def home():
-    return jsonify({"status": "Backend Active", "provider": "Direct Live Feed - High Liquidity FNO"})
+    return jsonify({"status": "Backend Active", "provider": "Direct Live Feed"})
 
 @app.route('/scan', methods=['GET', 'POST', 'OPTIONS'])
 def scan_stocks():
@@ -20,51 +20,33 @@ def scan_stocks():
         return jsonify({"status": "OK"}), 200
 
     try:
-        # Top 30 High Liquidity & High Beta F&O Stocks for Intraday Moves
+        # High Volume F&O Stocks List
         tickers_map = {
             "^NSEI": "NIFTY 50",
             "^NSEBANK": "BANK NIFTY",
-            # Banking & Financials (Heavy Movers)
+            "RELIANCE.NS": "RELIANCE",
             "HDFCBANK.NS": "HDFCBANK",
             "ICICIBANK.NS": "ICICIBANK",
             "AXISBANK.NS": "AXISBANK",
             "SBIN.NS": "SBIN",
-            "KOTAKBANK.NS": "KOTAKBANK",
             "BAJFINANCE.NS": "BAJFINANCE",
-            "BAJAJFINSV.NS": "BAJAJFINSV",
-            # Auto & Infrastructure
             "TATAMOTORS.NS": "TATAMOTORS",
             "M&M.NS": "M&M",
             "MARUTI.NS": "MARUTI",
             "LT.NS": "LT",
-            # Energy, Metals & Oil
-            "RELIANCE.NS": "RELIANCE",
             "TATASTEEL.NS": "TATASTEEL",
             "HINDALCO.NS": "HINDALCO",
-            "JSWSTEEL.NS": "JSWSTEEL",
-            "COALINDIA.NS": "COALINDIA",
-            # IT & Tech (High Volatility)
             "INFY.NS": "INFY",
             "TCS.NS": "TCS",
-            "TECHM.NS": "TECHM",
-            "WIPRO.NS": "WIPRO",
-            # Telecom, FMCG & Consumer
             "BHARTIARTL.NS": "BHARTIARTL",
-            "ITC.NS": "ITC",
-            "TITAN.NS": "TITAN",
-            # High Beta & Momentum Stocks
             "ADANIENT.NS": "ADANIENT",
-            "ADANIPORTS.NS": "ADANIPORTS",
-            "BEL.NS": "BEL",
             "HAL.NS": "HAL",
-            "DLF.NS": "DLF",
-            "REC.NS": "REC",
-            "PFC.NS": "PFC"
+            "BEL.NS": "BEL"
         }
 
         symbols_list = list(tickers_map.keys())
-        # Fetching bulk data in single call for high performance
-        data = yf.download(symbols_list, period="2d", interval="1m", progress=False)
+        # Downloading fast 1d data for quick response
+        data = yf.download(symbols_list, period="2d", interval="5m", progress=False, timeout=10)
 
         parsed_data = []
 
@@ -84,7 +66,6 @@ def scan_stocks():
             except Exception:
                 continue
 
-        # Sort stocks by Percentage Change (Highest Gainers / Losers on top)
         parsed_data.sort(key=lambda x: x['chg'], reverse=True)
 
         return jsonify({"success": True, "data": parsed_data})
